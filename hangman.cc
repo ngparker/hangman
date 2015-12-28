@@ -76,11 +76,11 @@ char PickNextChar(const CharSet& tried,
   vector<size_t> active_counts;
   active_counts.resize(ALPHA_LOWER.size());
 
-  // Dummy alg: pick the next alpha char.
   size_t char_pos = 0;
   size_t biggest_count = 0;
   char biggest_char = '!';
   const string* potential_word_guess = NULL;
+  bool multiple_potential = false;
   for (size_t char_pos = 0; char_pos < ALPHA_LOWER.size(); char_pos++) {
     char c = ALPHA_LOWER[char_pos];
     if (tried.count(c) != 0)
@@ -88,20 +88,27 @@ char PickNextChar(const CharSet& tried,
     // Count how mant words have this char.
     for (const string& w : active_set) {
       if (w.find(c) != string::npos) {
-        // Maybe we should count how many times it appears?
         active_counts[char_pos]++;
-        if (active_counts[char_pos] > biggest_count) {
+        if (active_counts[char_pos] >= biggest_count) {
           biggest_count = active_counts[char_pos];
           biggest_char = c;
-          potential_word_guess = &w;
+          // Save this word as a possible guess.  If there is ever
+          // another possible guess, we won't guess.
+          if (!potential_word_guess) {
+            potential_word_guess = &w;
+          } else {
+            if (potential_word_guess != &w) {
+              multiple_potential = true;
+            }
+          }
         }
       }
     }
   }
-  printf("  Picking '%c' with %zu appearances (%0.2f%%)\n",
+  printf("  Picking '%c' with %zu possible matches (%0.2f%%)\n",
       biggest_char, biggest_count, 100.0*biggest_count /
-        active_counts.size());
-  if (biggest_count == 1) {
+        active_set.size());
+  if (biggest_count == 1 and !multiple_potential) {
     *word_guess = *potential_word_guess;
   }
   if (tried.count(biggest_char)) {
@@ -166,17 +173,26 @@ void RunWordMatch(const string& word_to_find) {
     tried.insert(choice);
     printf("Tried '%c' against pattern '%s' and %zu possibilities:"
         " Found %zu chars\n",
-        choice, old_pattern.c_str(), possible_set.size(), found);
+        choice, pattern.c_str(), possible_set.size(), found);
 
 
     // Shorten our possible_set
     StringSet new_set;
-    for (const auto& w : possible_set) {
-      if (PatternMatches(pattern, w)) {
-        new_set.insert(w);
+    if (found) {
+      // Compare against the new pattern
+      for (const auto& w : possible_set) {
+        if (PatternMatches(pattern, w)) {
+          new_set.insert(w);
+        }
+      }
+    } else {
+      // Remove words that have letter not present.
+      for (const auto& w : possible_set) {
+        if (w.find(choice) == string::npos) {
+          new_set.insert(w);
+        }
       }
     }
-
     possible_set.swap(new_set);
   }
   printf("Found solution after %d attempts.\n", tried.size());
