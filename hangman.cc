@@ -105,7 +105,7 @@ char PickNextChar(const CharSet& tried,
       }
     }
   }
-  printf("  Picking '%c' with %zu possible matches (%0.2f%%)\n",
+  printf("  Picking '%c' since there are %zu possible matches (%0.2f%%)\n",
       biggest_char, biggest_count, 100.0*biggest_count /
         active_set.size());
   if (biggest_count == 1 and !multiple_potential) {
@@ -146,6 +146,7 @@ void RunWordMatch(const string& word_to_find) {
   // While we still have some unmatched chars in the pattern,
   // keep guessing.
   CharSet tried;
+  int failed_guess_count = 0;
   while (pattern.find('_') != string::npos) {
     string word_guess;
     char choice = PickNextChar(tried, possible_set, &word_guess);
@@ -155,7 +156,8 @@ void RunWordMatch(const string& word_to_find) {
       if (word_guess != word_to_find) {
         printf("WRONG!\n");
       } else {
-        printf("Found it in %d guesses\n", tried.size() + 1);
+        printf("Found it in %d guesses, %d were wrong\n",
+            tried.size() + 1, failed_guess_count);
       }
       return;
     }
@@ -171,10 +173,6 @@ void RunWordMatch(const string& word_to_find) {
     }
     // Remember that we've tried this char.
     tried.insert(choice);
-    printf("Tried '%c' against pattern '%s' and %zu possibilities:"
-        " Found %zu chars\n",
-        choice, pattern.c_str(), possible_set.size(), found);
-
 
     // Shorten our possible_set
     StringSet new_set;
@@ -185,7 +183,9 @@ void RunWordMatch(const string& word_to_find) {
           new_set.insert(w);
         }
       }
+
     } else {
+      failed_guess_count++;
       // Remove words that have letter not present.
       for (const auto& w : possible_set) {
         if (w.find(choice) == string::npos) {
@@ -193,11 +193,14 @@ void RunWordMatch(const string& word_to_find) {
         }
       }
     }
+    printf("Guess #%d (%d): '%c'. Pattern '%s'. Possibilities: %zu -> %zu\n",
+        tried.size(), failed_guess_count, choice, pattern.c_str(),
+        possible_set.size(), new_set.size());
     possible_set.swap(new_set);
   }
-  printf("Found solution after %d attempts.\n", tried.size());
+  printf("Found it in %d guesses, %d were wrong\n",
+      tried.size(), failed_guess_count);
 }
-
 
 };
 
