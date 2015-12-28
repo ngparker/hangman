@@ -68,8 +68,9 @@ void AddOneWord(const string& word) {
 }
 
 // The meat of the algorithm.  Pick the next best guess.
-char PickNextChar(const string& pattern, const CharSet& tried,
-    const StringSet& active_set) {
+// Can optioanlly set word_guess if we want to guess the full word.
+char PickNextChar(const CharSet& tried,
+    const StringSet& active_set, string* word_guess) {
   // Number of active words with a given char, indexed by position
   // in ALPHA_LOWER.
   vector<size_t> active_counts;
@@ -79,6 +80,7 @@ char PickNextChar(const string& pattern, const CharSet& tried,
   size_t char_pos = 0;
   size_t biggest_count = 0;
   char biggest_char = '!';
+  const string* potential_word_guess = NULL;
   for (size_t char_pos = 0; char_pos < ALPHA_LOWER.size(); char_pos++) {
     char c = ALPHA_LOWER[char_pos];
     if (tried.count(c) != 0)
@@ -91,6 +93,7 @@ char PickNextChar(const string& pattern, const CharSet& tried,
         if (active_counts[char_pos] > biggest_count) {
           biggest_count = active_counts[char_pos];
           biggest_char = c;
+          potential_word_guess = &w;
         }
       }
     }
@@ -98,8 +101,11 @@ char PickNextChar(const string& pattern, const CharSet& tried,
   printf("  Picking '%c' with %zu appearances (%0.2f%%)\n",
       biggest_char, biggest_count, 100.0*biggest_count /
         active_counts.size());
+  if (biggest_count == 1) {
+    *word_guess = *potential_word_guess;
+  }
   if (tried.count(biggest_char)) {
-    printf("Ack! trying one I've tried bbefore\n");
+    printf("Ack! trying one I've tried before\n");
   }
   if (biggest_count == 0) {
     printf("Failed to find a new char!\n");
@@ -134,7 +140,18 @@ void RunWordMatch(const string& word_to_find) {
   // keep guessing.
   CharSet tried;
   while (pattern.find('_') != string::npos) {
-    char choice = PickNextChar(pattern, tried, possible_set);
+    string word_guess;
+    char choice = PickNextChar(tried, possible_set, &word_guess);
+
+    if (!word_guess.empty()) {
+      printf("Guessing word '%s'\n", word_guess.c_str());
+      if (word_guess != word_to_find) {
+        printf("WRONG!\n");
+      } else {
+        printf("Found it in %d guesses\n", tried.size() + 1);
+      }
+      return;
+    }
 
     // See if we got a match.
     size_t found = 0;
