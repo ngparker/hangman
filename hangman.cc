@@ -16,7 +16,8 @@
 
 using namespace std;
 
-const char* WORD_FILENAME = "/usr/share/dict/american-english";
+//const char* WORD_FILENAME = "/usr/share/dict/american-english";
+const char* WORD_FILENAME = "./american-english";
 const string ALPHA_LOWER = "abcdefghijklmnopqrstuvwxyz";
 
 class Hangman {
@@ -51,10 +52,10 @@ bool ReadWordList() {
     AddOneWord(word);
    }
   word_file.close();
-  printf("Found %d words:\n", all_words_.size());
+  printf("Found %zu words:\n", all_words_.size());
 
   for (auto& itr : words_by_len_) {
-    printf("  %2d chars: %5d words\n", itr.first, itr.second.size());
+    printf("  %2lu chars: %5lu words\n", itr.first, itr.second.size());
   }
   printf("\n");
 
@@ -133,7 +134,7 @@ bool PatternMatches(const string& pattern, const string& word) {
 
 // Play against ourselves with a given word.
 void RunWordMatch(const string& word_to_find) {
-  printf("Going to play against word '%s'.  %d chars.\n", word_to_find.c_str(),
+  printf("Going to play against word '%s'.  %zu chars.\n", word_to_find.c_str(),
       word_to_find.size());
 
   StringSet possible_set = words_by_len_[word_to_find.size()];
@@ -146,7 +147,7 @@ void RunWordMatch(const string& word_to_find) {
   // While we still have some unmatched chars in the pattern,
   // keep guessing.
   CharSet tried;
-  int failed_guess_count = 0;
+  size_t failed_guess_count = 0;
   while (pattern.find('_') != string::npos) {
     string word_guess;
     char choice = PickNextChar(tried, possible_set, &word_guess);
@@ -156,7 +157,7 @@ void RunWordMatch(const string& word_to_find) {
       if (word_guess != word_to_find) {
         printf("WRONG!\n");
       } else {
-        printf("Found it in %d guesses, %d were wrong\n",
+        printf("Found it in %zu guesses, %zu were wrong\n",
             tried.size() + 1, failed_guess_count);
       }
       return;
@@ -193,12 +194,12 @@ void RunWordMatch(const string& word_to_find) {
         }
       }
     }
-    printf("Guess #%d (%d): '%c'. Pattern '%s'. Possibilities: %zu -> %zu\n",
+    printf("Guess #%zu (%zu): '%c'. Pattern '%s'. Possibilities: %zu -> %zu\n",
         tried.size(), failed_guess_count, choice, pattern.c_str(),
         possible_set.size(), new_set.size());
     possible_set.swap(new_set);
   }
-  printf("Found it in %d guesses, %d were wrong\n",
+  printf("Found it in %zu guesses, %zu were wrong\n",
       tried.size(), failed_guess_count);
 }
 
