@@ -56,25 +56,54 @@ bool ReadWordList(const char* dict_filename, StringSet* output_set) {
 
 
 void Usage(const char* exec_name) {
-  fprintf(stderr, "Usage: %s [-w word]\n"
-      "\tWithout args, will play all words.\n",
-       exec_name);
+  fprintf(stderr, "Usage:\n"
+      " %s -w word\n"
+      " %s -n count_of_words_to_try [-l word_len]\n",
+      exec_name, exec_name);
   exit(-1);
+}
+
+// Pick out |num| words that are |word_len| long (or all if word_len==0);
+void FilterWords(const StringSet& words, StringSet* new_words, int num,
+    int word_len) {
+
+  auto itr = words.begin();
+  while (itr != words.end() && new_words->size() < num) {
+    if (word_len == itr->size() || word_len == 0)
+      new_words->insert(*itr);
+    itr++;
+  }
 }
 
 int main(int argc, char* argv[]) {
   string word_to_find;
+  int word_count_to_find = 0;
+  int word_len = 0;
   int opt;
-  while ( (opt = getopt(argc, argv, "w:")) != -1 ) {
+  while ( (opt = getopt(argc, argv, "w:n:l:")) != -1 ) {
     switch ( opt ) {
       case 'w':
         word_to_find = optarg;
+        if (word_to_find.empty())
+          Usage(argv[0]);
         break;
-      defailt:
+      case 'n':
+        word_count_to_find = strtol(optarg, NULL, 10);
+        if (word_count_to_find <= 0)
+          Usage(argv[0]);
+        break;
+      case 'l':
+        word_len = strtol(optarg, NULL, 10);
+        if (word_len <= 0)
+          Usage(argv[0]);
+        break;
+      default:
         Usage(argv[0]);
     }
   }
 
+  if (!((word_count_to_find == 0) ^ word_to_find.empty()))
+    Usage(argv[0]);
 
   StringSet words;
   if (!ReadWordList(WORD_FILENAME, &words))
@@ -83,10 +112,14 @@ int main(int argc, char* argv[]) {
   HPCPlayer player(words);
   HangmanMaker maker(&player);
 
-  if (!word_to_find.empty())
+  if (!word_to_find.empty()) {
     maker.PlayWord(word_to_find);
-  else
-    maker.PlayManyWords(words);
+  } else {
+    StringSet new_words;
+    FilterWords(words, &new_words, word_count_to_find, word_len);
+    maker.PlayManyWords(new_words);
+    maker.PrintStats();
+  }
 
   return 0;
 }

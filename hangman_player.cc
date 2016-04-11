@@ -76,7 +76,8 @@ void HPCGame::UpdateStateWithPattern(const std::string& new_pattern) {
         new_set.insert(w);
     }
   }
-  printf("%s guess of '%c' reduced domain from %zu to %zu (by %.1f%%).\n",
+  printf("%s:  %s guess of '%c' reduced domain from %zu to %zu (by %.1f%%).\n",
+      new_pattern.c_str(),
       (matched ? "Successful" : "Failed"),
       last_guessed_char_, active_set_.size(), new_set.size(),
       (100.0 * (active_set_.size() - new_set.size())) / active_set_.size());
@@ -135,8 +136,8 @@ char HPCGame::GuessNextChar(const std::string& new_pattern,
     return '!';  // not used.
   }
 
-  printf("  Picking '%c' since there are %zu possible matches (%0.2f%%)\n",
-      biggest_char, biggest_count, 100.0*biggest_count / active_set_.size());
+  //printf("  Picking '%c' since there are %zu possible matches (%0.2f%%)\n",
+  //    biggest_char, biggest_count, 100.0*biggest_count / active_set_.size());
 
   if (tried_.count(biggest_char)) {
     printf("Ack! trying one I've tried before\n");
