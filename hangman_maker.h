@@ -29,7 +29,7 @@ public:
   static const std::string& AllChars() {return all_chars_;}
 
   // Play all the words in word_set. Collects stats
-  void PlayManyWords(const std::set<std::string>& word_set);
+  void PlayManyWords(const std::unordered_set<std::string>& word_set);
 
   // Have player_ try to guess the word_to_find.  Collect stats.
   void PlayWord(const std::string& word_to_find);

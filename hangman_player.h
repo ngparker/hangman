@@ -6,9 +6,9 @@
 #define HANGMAN_PLAYER_H_
 
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <memory>
-#include <set>
+#include <unordered_set>
 
 // Interface for a player to implement.
 class HangmanPlayer {
@@ -33,11 +33,11 @@ class HangmanPlayer {
 ///
 // The "Highest-Probability Character Choice" (HPC) algorithm impl.
 
-typedef std::set<std::string> StringSet;
+typedef std::unordered_set<std::string> StringSet;
 
 // Precomputed data
 struct HPCData {
-  std::map<size_t, StringSet> words_by_len;
+  std::unordered_map<size_t, StringSet> words_by_len;
 };
 
 class HPCPlayer : public HangmanPlayer {

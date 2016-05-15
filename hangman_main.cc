@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <set>
+#include <unordered_set>
 #include <string>
 
 #include "hangman_maker.h"
@@ -19,7 +19,6 @@ using namespace std;
 
 //const char* WORD_FILENAME = "/usr/share/dict/american-english";
 const char* WORD_FILENAME = "./american-english";
-
 
 // Read one word per line, and through out ones that we wouldn't
 // use in the game of Hangman.  Expects something like 

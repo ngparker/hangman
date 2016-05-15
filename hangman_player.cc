@@ -20,7 +20,7 @@
 
 // ------- HPCGame class and methods ---------
 
-typedef std::set<char> CharSet;
+typedef std::unordered_set<char> CharSet;
 
 class HPCGame : public HangmanPlayer::Game {
   public:
